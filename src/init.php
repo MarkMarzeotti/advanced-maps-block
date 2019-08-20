@@ -5,7 +5,7 @@
  * Enqueue CSS/JS of all the blocks.
  *
  * @since   1.0.0
- * @package Easy Google Map
+ * @package Guten Google Map
  */
 
 // Exit if accessed directly.
@@ -27,11 +27,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @uses {wp-editor} for WP editor styles.
  * @since 1.0.0
  */
-function easy_google_map_block_assets() { // phpcs:ignore
+function guten_google_map_block_assets() { // phpcs:ignore
 	$deps = is_admin() ? array( 'wp-editor' ) : false;
 	// Register block styles for both frontend + backend.
 	wp_register_style(
-		'easy_google_map-style-css',
+		'guten_google_map-style-css',
 		plugins_url( 'dist/blocks.style.build.css', dirname( __FILE__ ) ),
 		$deps,
 		null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' )
@@ -39,7 +39,7 @@ function easy_google_map_block_assets() { // phpcs:ignore
 
 	// Register block editor script for backend.
 	wp_register_script(
-		'easy_google_map-block-js',
+		'guten_google_map-block-js',
 		plugins_url( '/dist/blocks.build.js', dirname( __FILE__ ) ),
 		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ),
 		null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
@@ -48,7 +48,7 @@ function easy_google_map_block_assets() { // phpcs:ignore
 
 	// Register block editor styles for backend.
 	wp_register_style(
-		'easy_google_map-block-editor-css',
+		'guten_google_map-block-editor-css',
 		plugins_url( 'dist/blocks.editor.build.css', dirname( __FILE__ ) ),
 		array( 'wp-edit-blocks' ),
 		null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' )
@@ -65,14 +65,14 @@ function easy_google_map_block_assets() { // phpcs:ignore
 	 * @since 1.16.0
 	 */
 	register_block_type(
-		'cgb/block-easy-google-map', array(
+		'guten-google-map/guten-google-map', array(
 			// Enqueue blocks.style.build.css on both frontend & backend.
-			'style'         => 'easy_google_map-style-css',
+			'style'         => 'guten_google_map-style-css',
 			// Enqueue blocks.build.js in the editor only.
-			'editor_script' => 'easy_google_map-block-js',
+			'editor_script' => 'guten_google_map-block-js',
 			// Enqueue blocks.editor.build.css in the editor only.
-			'editor_style'  => 'easy_google_map-block-editor-css',
+			'editor_style'  => 'guten_google_map-block-editor-css',
 		)
 	);
 }
-add_action( 'init', 'easy_google_map_block_assets' );
+add_action( 'init', 'guten_google_map_block_assets' );

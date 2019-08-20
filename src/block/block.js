@@ -1,5 +1,5 @@
 /**
- * BLOCK: Easy Google Map
+ * BLOCK: Guten Google Map
  */
 
 //  Import CSS.
@@ -10,7 +10,7 @@ const { __ } = wp.i18n;
 const { registerBlockType } = wp.blocks;
 
 /**
- * Register: Easy Google Map Block.
+ * Register: Guten Google Map Block.
  *
  * @link https://wordpress.org/gutenberg/handbook/block-api/
  * @param  {string}   name     Block name.
@@ -18,21 +18,21 @@ const { registerBlockType } = wp.blocks;
  * @return {?WPBlock}          The block, if it has been successfully
  *                             registered; otherwise `undefined`.
  */
-registerBlockType( 'easy-google-map/easy-google-map', {
-	title: __( 'Easy Google Map' ),
+registerBlockType( 'guten-google-map/guten-google-map', {
+	title: __( 'Guten Google Map' ),
 	icon: 'location',
 	category: 'common',
 	keywords: [
 		__( 'map' ),
 		__( 'google' ),
-		__( 'easy google map' ),
+		__( 'guten google map' ),
 	],
 	edit: ( props ) => {
 		return (
 			<div className={ props.className }>
 				<p>— Hello from the backend.</p>
 				<p>
-					CGB BLOCK: <code>easy-google-map</code> is a new Gutenberg block
+					CGB BLOCK: <code>guten-google-map</code> is a new Gutenberg block
 				</p>
 				<p>
 					It was created via{ ' ' }
@@ -50,7 +50,7 @@ registerBlockType( 'easy-google-map/easy-google-map', {
 			<div className={ props.className }>
 				<p>— Hello from the frontend.</p>
 				<p>
-					CGB BLOCK: <code>easy-google-map</code> is a new Gutenberg block.
+					CGB BLOCK: <code>guten-google-map</code> is a new Gutenberg block.
 				</p>
 				<p>
 					It was created via{ ' ' }

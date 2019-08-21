@@ -8,10 +8,20 @@ import './style.scss';
 
 import { withScriptjs, withGoogleMap, GoogleMap, Marker } from 'react-google-maps';
 
+import defaultStyles from './default-styles.json';
+
 const { __ } = wp.i18n;
 const { registerBlockType } = wp.blocks;
-const { PanelBody, TextControl, RangeControl, ToggleControl } = wp.components;
-const { InspectorControls, PanelColorSettings } = wp.editor;
+const {
+	PanelBody,
+	TextControl,
+	TextareaControl,
+	RangeControl,
+	ToggleControl,
+	RadioControl,
+	Button,
+} = wp.components;
+const { InspectorControls } = wp.editor;
 
 /**
  * Register: Guten Google Map Block.
@@ -47,8 +57,13 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 			type: 'boolean',
 			default: true,
 		},
-		color: {
+		quickStyle: {
 			type: 'string',
+			default: 'standard',
+		},
+		advancedStyle: {
+			type: 'string',
+			default: '',
 		},
 	},
 	supports: {
@@ -60,6 +75,10 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 		__( 'guten google map' ),
 	],
 	edit: ( props ) => {
+		let mapStyles = [];
+
+		mapStyles = props.attributes.quickStyle !== 'standard' ? defaultStyles[ props.attributes.quickStyle ] : [];
+
 		const MapComponent = withScriptjs( withGoogleMap( () =>
 			<GoogleMap
 				defaultZoom={ props.attributes.zoom }
@@ -67,166 +86,7 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 				defaultOptions={ {
 					disableDefaultUI: ! props.attributes.defaultUI,
 					scrollwheel: props.attributes.allowScrolling,
-					// styles: [
-					// 	{
-					// 		elementType: 'geometry',
-					// 		stylers: [
-					// 			{
-					// 				color: '#f5f5f5',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		elementType: 'labels.icon',
-					// 		stylers: [
-					// 			{
-					// 				visibility: 'off',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		elementType: 'labels.text.fill',
-					// 		stylers: [
-					// 			{
-					// 				color: '#616161',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		elementType: 'labels.text.stroke',
-					// 		stylers: [
-					// 			{
-					// 				color: '#f5f5f5',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'administrative.land_parcel',
-					// 		elementType: 'labels.text.fill',
-					// 		stylers: [
-					// 			{
-					// 				color: '#bdbdbd',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'poi',
-					// 		elementType: 'geometry',
-					// 		stylers: [
-					// 			{
-					// 				color: '#eeeeee',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'poi',
-					// 		elementType: 'labels.text.fill',
-					// 		stylers: [
-					// 			{
-					// 				color: '#757575',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'poi.park',
-					// 		elementType: 'geometry',
-					// 		stylers: [
-					// 			{
-					// 				color: '#e5e5e5',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'poi.park',
-					// 		elementType: 'labels.text.fill',
-					// 		stylers: [
-					// 			{
-					// 				color: '#9e9e9e',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'road',
-					// 		elementType: 'geometry',
-					// 		stylers: [
-					// 			{
-					// 				color: '#ffffff',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'road.arterial',
-					// 		elementType: 'labels.text.fill',
-					// 		stylers: [
-					// 			{
-					// 				color: '#757575',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'road.highway',
-					// 		elementType: 'geometry',
-					// 		stylers: [
-					// 			{
-					// 				color: '#dadada',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'road.highway',
-					// 		elementType: 'labels.text.fill',
-					// 		stylers: [
-					// 			{
-					// 				color: '#616161',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'road.local',
-					// 		elementType: 'labels.text.fill',
-					// 		stylers: [
-					// 			{
-					// 				color: '#9e9e9e',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'transit.line',
-					// 		elementType: 'geometry',
-					// 		stylers: [
-					// 			{
-					// 				color: '#e5e5e5',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'transit.station',
-					// 		elementType: 'geometry',
-					// 		stylers: [
-					// 			{
-					// 				color: '#eeeeee',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'water',
-					// 		elementType: 'geometry',
-					// 		stylers: [
-					// 			{
-					// 				color: '#c9c9c9',
-					// 			},
-					// 		],
-					// 	},
-					// 	{
-					// 		featureType: 'water',
-					// 		elementType: 'labels.text.fill',
-					// 		stylers: [
-					// 			{
-					// 				color: '#9e9e9e',
-					// 			},
-					// 		],
-					// 	},
-					// ],
+					styles: [ ...mapStyles ],
 				} }
 			>
 				<Marker position={ { lat: 35.239418, lng: -80.8455486 } } />
@@ -264,17 +124,41 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 						onChange={ () => props.setAttributes( { allowScrolling: ! props.attributes.allowScrolling } ) }
 					/>
 				</PanelBody>
-				<PanelColorSettings
-					title={ __( 'Style Settings' ) }
+				<PanelBody
+					title={ __( 'Quick Style Palettes' ) }
 					initialOpen={ false }
-					colorSettings={ [
-						{
-							value: props.attributes.color,
-							onChange: ( color ) => props.setAttributes( { color } ),
-							label: __( 'Color' ),
-						},
-					] }
-				/>
+				>
+					<RadioControl
+						label={ __( 'Map Style' ) }
+						selected={ props.attributes.quickStyle }
+						options={ [
+							{ label: 'Standard', value: 'standard' },
+							{ label: 'Silver', value: 'silver' },
+							{ label: 'Retro', value: 'retro' },
+							{ label: 'Dark', value: 'dark' },
+							{ label: 'Night', value: 'night' },
+							{ label: 'Aubergine', value: 'aubergine' },
+						] }
+						onChange={ ( quickStyle ) => props.setAttributes( { quickStyle } ) }
+					/>
+				</PanelBody>
+				<PanelBody
+					title={ __( 'Advanced Style Palette' ) }
+					initialOpen={ false }
+				>
+					<TextareaControl
+						label={ __( 'JSON Style Profile' ) }
+						help={ __( 'Write your own style profile or use the Map Style tool to generate one. Paste the generated code here. A value here will override the Map Style set in Quick Style Palettes.' ) }
+						value={ props.attributes.advancedStyle }
+						onChange={ ( advancedStyle ) => props.setAttributes( { advancedStyle } ) }
+					/>
+					<Button
+						href="https://mapstyle.withgoogle.com"
+						target="_blank"
+						isDefault>
+						{ __( 'Map Style tool' ) }
+					</Button>
+				</PanelBody>
 			</InspectorControls>,
 			<div key="2" className={ props.className }>
 				<MapComponent

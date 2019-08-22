@@ -75,9 +75,8 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 		__( 'guten google map' ),
 	],
 	edit: ( props ) => {
-		let mapStyles = [];
-
-		mapStyles = props.attributes.quickStyle !== 'standard' ? defaultStyles[ props.attributes.quickStyle ] : [];
+		const advancedStyleJSON = props.attributes.advancedStyle ? JSON.parse( props.attributes.advancedStyle ) : [];
+		const mapStyles = props.attributes.quickStyle !== 'standard' && ! props.attributes.advancedStyle ? defaultStyles[ props.attributes.quickStyle ] : [ ...advancedStyleJSON ];
 
 		const MapComponent = withScriptjs( withGoogleMap( () =>
 			<GoogleMap
@@ -148,7 +147,7 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 				>
 					<TextareaControl
 						label={ __( 'JSON Style Profile' ) }
-						help={ __( 'Write your own style profile or use the Map Style tool to generate one. Paste the generated code here. A value here will override the Map Style set in Quick Style Palettes.' ) }
+						help={ __( 'Write your own style profile or use the Map Style Tool to generate one. Paste the generated code here. A value here will override the Map Style set in Quick Style Palettes.' ) }
 						value={ props.attributes.advancedStyle }
 						onChange={ ( advancedStyle ) => props.setAttributes( { advancedStyle } ) }
 					/>
@@ -156,7 +155,7 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 						href="https://mapstyle.withgoogle.com"
 						target="_blank"
 						isDefault>
-						{ __( 'Map Style tool' ) }
+						{ __( 'Map Style Tool' ) }
 					</Button>
 				</PanelBody>
 			</InspectorControls>,

@@ -10,3 +10,5 @@
  * CSS for just Backend enqueued after style.scss
  * which makes it higher in priority.
  */
+.gmnoprint .gm-svpc > div {
+  width: 100%; }

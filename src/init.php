@@ -31,7 +31,7 @@ function guten_google_map_block_assets() { // phpcs:ignore
 	$deps = is_admin() ? array( 'wp-editor' ) : false;
 	// Register block styles for both frontend + backend.
 	wp_register_style(
-		'guten_google_map-style-css',
+		'guten-google-map-style-css',
 		plugins_url( 'dist/blocks.style.build.css', dirname( __FILE__ ) ),
 		$deps,
 		null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' )
@@ -39,7 +39,7 @@ function guten_google_map_block_assets() { // phpcs:ignore
 
 	// Register block editor script for backend.
 	wp_register_script(
-		'guten_google_map-block-js',
+		'guten-google-map-block-js',
 		plugins_url( '/dist/blocks.build.js', dirname( __FILE__ ) ),
 		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ),
 		null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
@@ -48,10 +48,38 @@ function guten_google_map_block_assets() { // phpcs:ignore
 
 	// Register block editor styles for backend.
 	wp_register_style(
-		'guten_google_map-block-editor-css',
+		'guten-google-map-block-editor-css',
 		plugins_url( 'dist/blocks.editor.build.css', dirname( __FILE__ ) ),
 		array( 'wp-edit-blocks' ),
 		null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' )
+	);
+
+	// Register script for frontend.
+	wp_register_script(
+		'guten-google-map-frontend-js',
+		plugins_url( '/dist/frontend.build.js', dirname( __FILE__ ) ),
+		array(),
+		null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
+		true
+	);
+
+	// WP Localized globals. Use dynamic PHP stuff in JavaScript via `cgbGlobal` object.
+	wp_localize_script(
+		'guten-google-map-frontend-js',
+		'ggmGlobal', // Array containing dynamic data for a JS Global.
+		[
+			'pluginDirPath' => plugin_dir_path( __DIR__ ),
+			'pluginDirUrl'  => plugin_dir_url( __DIR__ ),
+		]
+	);
+
+	// Register Google Maps API for frontend.
+	wp_register_script(
+		'google-maps',
+		'https://maps.googleapis.com/maps/api/js?key=AIzaSyCb0NahCEnubhm0zEaBcJKF4nPgrSZ3IQM&callback=gutenGoogleMapInit',
+		array( 'guten-google-map-frontend-js' ),
+		null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
+		true
 	);
 
 	/**
@@ -67,11 +95,15 @@ function guten_google_map_block_assets() { // phpcs:ignore
 	register_block_type(
 		'guten-google-map/guten-google-map', array(
 			// Enqueue blocks.style.build.css on both frontend & backend.
-			'style'         => 'guten_google_map-style-css',
+			'style'         => 'guten-google-map-style-css',
 			// Enqueue blocks.build.js in the editor only.
-			'editor_script' => 'guten_google_map-block-js',
+			'editor_script' => 'guten-google-map-block-js',
 			// Enqueue blocks.editor.build.css in the editor only.
-			'editor_style'  => 'guten_google_map-block-editor-css',
+			'editor_style'  => 'guten-google-map-block-editor-css',
+			// Enqueue frontend.build.js on frontend.
+			'script'        => 'guten-google-map-frontend-js',
+			// Enqueue Google Maps API on frontend.
+			'script'        => 'google-maps',
 		)
 	);
 }

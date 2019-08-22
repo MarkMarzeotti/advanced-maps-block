@@ -170,8 +170,19 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 		];
 	},
 	save: ( props ) => {
+		const advancedStyleJSON = props.attributes.advancedStyle ? JSON.parse( props.attributes.advancedStyle ) : [];
+		const mapStyles = props.attributes.quickStyle !== 'standard' && ! props.attributes.advancedStyle ? defaultStyles[ props.attributes.quickStyle ] : [ ...advancedStyleJSON ];
+
 		return (
 			<div className={ props.className }>
+				<div className="guten-google-map"
+					data-center={ JSON.stringify( { lat: 35.239418, lng: -80.8455486 } ) }
+					data-marker={ JSON.stringify( { lat: 35.239418, lng: -80.8455486 } ) }
+					data-zoom={ props.attributes.zoom }
+					data-scrollwheel={ props.attributes.allowScrolling }
+					data-disabledefaultui={ props.attributes.defaultUI }
+					data-styles={ JSON.stringify( mapStyles ) }
+				></div>
 			</div>
 		);
 	},

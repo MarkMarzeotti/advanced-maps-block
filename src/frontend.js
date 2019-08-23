@@ -1,8 +1,8 @@
 function gutenGoogleMapInit() {
-	const maps = document.getElementsByClassName( 'guten-google-map' );
+	var maps = document.getElementsByClassName( 'guten-google-map' );
 
 	Array.prototype.forEach.call( maps, function( mapItem ) {
-		const map = new google.maps.Map( mapItem, {
+		var map = new google.maps.Map( mapItem, {
 			zoom: JSON.parse( mapItem.dataset.zoom ),
 			center: JSON.parse( mapItem.dataset.center ),
 			scrollwheel: JSON.parse( mapItem.dataset.scrollwheel ),
@@ -10,7 +10,7 @@ function gutenGoogleMapInit() {
 			styles: JSON.parse( mapItem.dataset.styles ),
 		} );
 
-		const marker = new google.maps.Marker( {
+		var marker = new google.maps.Marker( {
 			position: JSON.parse( mapItem.dataset.marker ),
 			map: map,
 		} );

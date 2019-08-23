@@ -54,23 +54,22 @@ function guten_google_map_block_assets() { // phpcs:ignore
 		null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' )
 	);
 
+	// // Register script for frontend.
+	// wp_register_script(
+	// 	'guten-google-map-frontend-js',
+	// 	plugins_url( '/dist/frontend.build.js', dirname( __FILE__ ) ),
+	// 	array(),
+	// 	null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
+	// 	true
+	// );
+
 	// Register script for frontend.
 	wp_register_script(
 		'guten-google-map-frontend-js',
-		plugins_url( '/dist/frontend.build.js', dirname( __FILE__ ) ),
+		plugins_url( '/src/frontend.js', dirname( __FILE__ ) ),
 		array(),
 		null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
 		true
-	);
-
-	// WP Localized globals. Use dynamic PHP stuff in JavaScript via `cgbGlobal` object.
-	wp_localize_script(
-		'guten-google-map-frontend-js',
-		'ggmGlobal', // Array containing dynamic data for a JS Global.
-		[
-			'pluginDirPath' => plugin_dir_path( __DIR__ ),
-			'pluginDirUrl'  => plugin_dir_url( __DIR__ ),
-		]
 	);
 
 	// Register Google Maps API for frontend.

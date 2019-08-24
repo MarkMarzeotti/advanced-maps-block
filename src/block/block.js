@@ -7,6 +7,7 @@ import './editor.scss';
 import './style.scss';
 
 import { withScriptjs, withGoogleMap, GoogleMap, Marker } from 'react-google-maps';
+import Geocode from 'react-geocode';
 
 import defaultStyles from './default-styles.json';
 
@@ -42,24 +43,29 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 			type: 'string',
 			default: '',
 		},
-		markers: {
+		locations: {
 			type: 'string',
-			default: '',
+			default: '[]',
+			// {
+			// 	lat: 0,
+			// 	lng: 0,
+			// 	address: '',
+			// }
 		},
 		mapHeight: {
-			type: 'integer',
+			type: 'number',
 			default: 400,
 		},
 		zoom: {
-			type: 'integer',
+			type: 'number',
 			default: 12,
 		},
 		defaultUI: {
-			type: 'boolean',
+			type: 'bool',
 			default: true,
 		},
 		allowScrolling: {
-			type: 'boolean',
+			type: 'bool',
 			default: true,
 		},
 		quickStyle: {
@@ -83,58 +89,82 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 		constructor() {
 			super( ...arguments );
 
+			const locations = JSON.parse( this.props.attributes.locations );
+
 			this.state = {
-				markerValues: JSON.parse( this.props.attributes.markers ),
+				locations,
 			};
+
+			Geocode.setApiKey( 'AIzaSyCb0NahCEnubhm0zEaBcJKF4nPgrSZ3IQM' );
 		}
 
-		handleMarkerChange( address, index ) {
-			const newMarkers = this.state.markerValues;
-			newMarkers[ index ] = address;
-			this.setState( { markerValues: newMarkers } );
-			this.props.setAttributes( { markers: JSON.stringify( newMarkers ) } );
-		}
+		handleAddLocation() {
+			let locations = this.state.locations;
 
-		handleAddMarker() {
-			const existingMarkers = this.props.attributes.markers ? JSON.parse( this.props.attributes.markers ) : [ '' ];
-
-			if ( this.props.attributes.markers ) {
-				existingMarkers.unshift( '' );
+			if ( locations.length ) {
+				locations.unshift( {
+					lat: 0,
+					lng: 0,
+					address: '',
+				} );
+			} else {
+				locations = [ {
+					lat: 0,
+					lng: 0,
+					address: '',
+				} ];
 			}
 
-			const markerFields = existingMarkers.map( ( existingMarker, index ) => {
-				return <TextControl
-					key={ index }
-					label={ __( 'Address' ) }
-					value={ this.state.markerValues[ index ] }
-					onChange={ ( address ) => this.handleMarkerChange( address, index ) }
-				/>;
-			} );
+			this.setState( { locations } );
+		}
 
-			this.setState( { markerFields } );
-			this.props.setAttributes( { markers: JSON.stringify( existingMarkers ) } );
+		handleLocationChange( address, index ) {
+			const locations = this.state.locations;
+			locations[ index ].address = address;
+			this.setState( { locations } );
+		}
+
+		handleUpdateLocations() {
+			const locations = this.state.locations;
+
+			locations.map( ( location, index ) => {
+				Geocode.fromAddress( location.address ).then(
+					response => {
+						locations[ index ] = {
+							lat: response.results[ 0 ].geometry.location.lat,
+							lng: response.results[ 0 ].geometry.location.lng,
+							address: response.results[ 0 ].formatted_address,
+						};
+						this.props.setAttributes( { locations: JSON.stringify( locations ) } );
+						this.setState( { locations } );
+					},
+					error => {
+						return error;
+					}
+				);
+			} );
 		}
 
 		render() {
 			let markers = null;
 			let markerFields = null;
 
-			if ( this.props.attributes.markers ) {
-				const existingMarkers = JSON.parse( this.props.attributes.markers );
+			const locations = this.state.locations;
 
-				markers = existingMarkers.map( ( existingMarker, index ) => {
+			if ( locations.length ) {
+				markers = locations.map( ( location, index ) => {
 					return <Marker
 						key={ index }
-						position={ { lat: 35.239418, lng: -80.8455486 } }
+						position={ { lat: location.lat, lng: location.lng } }
 					/>;
 				} );
 
-				markerFields = existingMarkers.map( ( existingMarker, index ) => {
+				markerFields = locations.map( ( location, index ) => {
 					return <TextControl
 						key={ index }
 						label={ __( 'Address' ) }
-						value={ this.state.markerValues[ index ] }
-						onChange={ ( address ) => this.handleMarkerChange( address, index ) } // this is the issue here
+						value={ this.state.locations[ index ].address }
+						onChange={ ( address ) => this.handleLocationChange( address, index ) }
 					/>;
 				} );
 			}
@@ -173,8 +203,14 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 						{ markerFields }
 						<Button
 							isDefault
-							onClick={ this.handleAddMarker.bind( this ) }>
+							onClick={ this.handleAddLocation.bind( this ) }>
 							{ __( 'Add Marker' ) }
+						</Button>
+						<Button
+							isDefault
+							style={ { marginLeft: '10px' } }
+							onClick={ this.handleUpdateLocations.bind( this ) }>
+							{ __( 'Apply Updates' ) }
 						</Button>
 					</PanelBody>
 					<PanelBody
@@ -184,7 +220,7 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 							label={ __( 'Map Height' ) }
 							type="number"
 							value={ this.props.attributes.mapHeight }
-							onChange={ ( mapHeight ) => this.props.setAttributes( { mapHeight: parseInt( mapHeight ) } ) }
+							onChange={ ( mapHeight ) => this.props.setAttributes( { mapHeight: JSON.parse( mapHeight ) } ) }
 						/>
 						<RangeControl
 							label={ __( 'Zoom' ) }
@@ -253,7 +289,7 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 			];
 		}
 	},
-	save: ( props ) => {
+	save: ( props ) => { // fix parse stringify here
 		const advancedStyleJSON = props.attributes.advancedStyle ? JSON.parse( props.attributes.advancedStyle ) : [];
 		const mapStyles = props.attributes.quickStyle !== 'standard' && ! props.attributes.advancedStyle ? defaultStyles[ props.attributes.quickStyle ] : [ ...advancedStyleJSON ];
 

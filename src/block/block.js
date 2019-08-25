@@ -46,11 +46,6 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 		locations: {
 			type: 'string',
 			default: '[]',
-			// {
-			// 	lat: 0,
-			// 	lng: 0,
-			// 	address: '',
-			// }
 		},
 		mapHeight: {
 			type: 'number',
@@ -136,7 +131,7 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 							address: response.results[ 0 ].formatted_address,
 						};
 						this.props.setAttributes( { locations: JSON.stringify( locations ) } );
-						this.setState( { locations } );
+						this.setState( { locations } ); // somehow wait till the end to save?
 					},
 					error => {
 						return error;
@@ -203,13 +198,15 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 						{ markerFields }
 						<Button
 							isDefault
-							onClick={ this.handleAddLocation.bind( this ) }>
+							onClick={ this.handleAddLocation.bind( this ) }
+						>
 							{ __( 'Add Marker' ) }
 						</Button>
 						<Button
 							isDefault
 							style={ { marginLeft: '10px' } }
-							onClick={ this.handleUpdateLocations.bind( this ) }>
+							onClick={ this.handleUpdateLocations.bind( this ) }
+						>
 							{ __( 'Apply Updates' ) }
 						</Button>
 					</PanelBody>
@@ -273,7 +270,8 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 						<Button
 							href="https://mapstyle.withgoogle.com"
 							target="_blank"
-							isDefault>
+							isDefault
+						>
 							{ __( 'Map Style Tool' ) }
 						</Button>
 					</PanelBody>
@@ -297,8 +295,7 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 			<div className={ props.className }>
 				<div className="guten-google-map"
 					style={ { height: props.attributes.mapHeight + 'px' } }
-					data-center={ JSON.stringify( { lat: 35.239418, lng: -80.8455486 } ) }
-					data-marker={ JSON.stringify( { lat: 35.239418, lng: -80.8455486 } ) }
+					data-markers={ props.attributes.locations }
 					data-zoom={ props.attributes.zoom }
 					data-scrollwheel={ props.attributes.allowScrolling }
 					data-disabledefaultui={ ! props.attributes.defaultUI }

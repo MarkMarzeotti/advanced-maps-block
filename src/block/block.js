@@ -98,8 +98,6 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 		}
 
 		handleUpdateAPIKey() {
-			Geocode.setApiKey( this.state.APIKey );
-
 			axios( {
 				method: 'post',
 				url: gutenGoogleMapsGlobal.ajaxUrl,
@@ -110,7 +108,8 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 				},
 			} )
 				.then( function( response ) {
-					console.log(response);
+					Geocode.setApiKey( this.state.APIKey );
+					this.props.setAttributes( { APIKey: this.state.APIKey } );
 				} )
 				.catch( function( error ) {
 					console.log( error );
@@ -326,7 +325,7 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 
 		return (
 			<div className={ props.className }>
-				<div className="guten-google-map"
+				<div className="guten-google-maps"
 					style={ { height: props.attributes.mapHeight + 'px' } }
 					data-markers={ props.attributes.locations }
 					data-zoom={ props.attributes.zoom }

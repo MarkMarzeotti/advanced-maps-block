@@ -14,3 +14,18 @@
         }
     }
 }
+
+.guten-google-maps {
+    
+    &__marker-address {
+        float: left;
+        width: calc(100% - 40px);
+    }
+    
+    &__remove-marker-address {
+        float: left;
+        margin-left: 10px;
+        margin-top: 1px;
+        padding: 5px 5px 4px;
+    }
+}

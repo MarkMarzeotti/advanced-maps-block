@@ -44,7 +44,7 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 	wp_register_script(
 		'guten-google-maps-block-js',
 		plugins_url( '/dist/blocks.build.js', dirname( __FILE__ ) ),
-		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor', 'wp-api' ),
+		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ),
 		null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
 		true
 	);
@@ -62,32 +62,25 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 		'guten-google-maps-block-js',
 		'gutenGoogleMapsGlobal',
 		[
-			'APIKey'  => get_option( 'guten_google_maps_api_key', '' ),
+			'apiKey'  => get_option( 'guten_google_maps_api_key', '' ),
 			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 			'nonce'   => $nonce
 		]
 	);
 
-	// // Register script for frontend.
-	// wp_register_script(
-	// 	'guten-google-maps-frontend-js',
-	// 	plugins_url( '/dist/frontend.build.js', dirname( __FILE__ ) ),
-	// 	array(),
-	// 	null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
-	// 	true
-	// );
-
 	// Register script for frontend.
-	wp_register_script(
-		'guten-google-maps-frontend-js',
-		plugins_url( '/src/frontend.js', dirname( __FILE__ ) ),
-		array(),
-		null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
-		true
-	);
+	if ( ! is_admin() ) {
+		wp_register_script(
+			'guten-google-maps-frontend-js',
+			plugins_url( '/src/frontend.js', dirname( __FILE__ ) ),
+			array(),
+			null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
+			true
+		);
+	}
 
 	// Register Google Maps API for frontend.
-	if ( ! empty( $key ) && ! is_admin() ) {
+	if ( ! empty( $key ) ) {
 		wp_register_script(
 			'google-maps',
 			'https://maps.googleapis.com/maps/api/js?key=' . $key . '&callback=gutenGoogleMapInit',
@@ -124,6 +117,9 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 }
 add_action( 'init', 'guten_google_maps_block_assets' );
 
+/**
+ * 
+ */
 function guten_google_maps_update_api_key( $response ) {
 	check_ajax_referer( 'guten_google_maps_api_key_nonce' );
 	$guten_google_maps_api_key = $_GET['guten_google_maps_api_key'];

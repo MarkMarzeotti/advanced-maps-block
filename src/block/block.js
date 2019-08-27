@@ -8,6 +8,7 @@ import './style.scss';
 
 import { withScriptjs, withGoogleMap, GoogleMap, Marker } from 'react-google-maps';
 import Geocode from 'react-geocode';
+import axios from 'axios';
 
 import defaultStyles from './default-styles.json';
 
@@ -34,7 +35,7 @@ const { Component } = wp.element;
  * @return {?WPBlock}          The block, if it has been successfully
  *                             registered; otherwise `undefined`.
  */
-registerBlockType( 'guten-google-map/guten-google-map', {
+registerBlockType( 'guten-google-maps/guten-google-maps', {
 	title: __( 'Guten Google Map' ),
 	icon: 'location',
 	category: 'common',
@@ -88,9 +89,32 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 
 			this.state = {
 				locations,
+				APIKey: gutenGoogleMapsGlobal.APIKey,
 			};
 
-			Geocode.setApiKey( 'AIzaSyCb0NahCEnubhm0zEaBcJKF4nPgrSZ3IQM' );
+			if ( gutenGoogleMapsGlobal.APIKey ) {
+				Geocode.setApiKey( gutenGoogleMapsGlobal.APIKey );
+			}
+		}
+
+		handleUpdateAPIKey() {
+			Geocode.setApiKey( this.state.APIKey );
+
+			axios( {
+				method: 'post',
+				url: gutenGoogleMapsGlobal.ajaxUrl,
+				params: {
+					action: 'guten_google_maps_update_api_key',
+					_ajax_nonce: gutenGoogleMapsGlobal.nonce,
+					guten_google_maps_api_key: this.state.APIKey,
+				},
+			} )
+				.then( function( response ) {
+					console.log(response);
+				} )
+				.catch( function( error ) {
+					console.log( error );
+				} );
 		}
 
 		handleAddLocation() {
@@ -167,10 +191,12 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 			const advancedStyleJSON = this.props.attributes.advancedStyle ? JSON.parse( this.props.attributes.advancedStyle ) : [];
 			const mapStyles = this.props.attributes.quickStyle !== 'standard' && ! this.props.attributes.advancedStyle ? defaultStyles[ this.props.attributes.quickStyle ] : [ ...advancedStyleJSON ];
 
+			const mapCenter = this.state.locations[ 0 ];
+
 			const MapComponent = withScriptjs( withGoogleMap( () =>
 				<GoogleMap
 					defaultZoom={ this.props.attributes.zoom }
-					defaultCenter={ { lat: 35.239418, lng: -80.8455486 } }
+					defaultCenter={ mapCenter }
 					defaultOptions={ {
 						disableDefaultUI: ! this.props.attributes.defaultUI,
 						scrollwheel: this.props.attributes.allowScrolling,
@@ -185,12 +211,19 @@ registerBlockType( 'guten-google-map/guten-google-map', {
 				<InspectorControls key="1">
 					<PanelBody
 						title={ __( 'Google Maps API Key' ) }
+						initialOpen={ ! gutenGoogleMapsGlobal.APIKey }
 					>
 						<TextControl
 							label={ __( 'API Key' ) }
-							value={ this.props.attributes.APIKey }
-							onChange={ ( APIKey ) => this.props.setAttributes( { APIKey } ) }
+							value={ this.state.APIKey }
+							onChange={ ( APIKey ) => this.setState( { APIKey } ) }
 						/>
+						<Button
+							isDefault
+							onClick={ this.handleUpdateAPIKey.bind( this ) }
+						>
+							{ __( 'Apply API Key' ) }
+						</Button>
 					</PanelBody>
 					<PanelBody
 						title={ __( 'Map Markers' ) }

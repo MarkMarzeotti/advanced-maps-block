@@ -1,22 +1,33 @@
 function gutenGoogleMapInit() {
-	var maps = document.getElementsByClassName( 'guten-google-map' );
+	var maps = document.getElementsByClassName( 'guten-google-maps' );
 
 	Array.prototype.forEach.call( maps, function( mapItem ) {
-		var markers = JSON.parse( mapItem.dataset.markers );
+		var markers = JSON.parse( mapItem.dataset.markers ),
+			zoom = JSON.parse( mapItem.dataset.zoom ),
+			scrollwheel = JSON.parse( mapItem.dataset.scrollwheel ),
+			disableDefaultUI = JSON.parse( mapItem.dataset.disabledefaultui ),
+			styles = JSON.parse( mapItem.dataset.styles );
 
 		var map = new google.maps.Map( mapItem, {
-			zoom: JSON.parse( mapItem.dataset.zoom ),
-			center: markers[ 0 ],
-			scrollwheel: JSON.parse( mapItem.dataset.scrollwheel ),
-			disableDefaultUI: JSON.parse( mapItem.dataset.disabledefaultui ),
-			styles: JSON.parse( mapItem.dataset.styles ),
+			scrollwheel: scrollwheel,
+			disableDefaultUI: disableDefaultUI,
+			styles: styles,
 		} );
 
-		Array.prototype.forEach.call( markers, function( marker ) {
-			return new google.maps.Marker( {
-				position: marker,
+		var marker, i;
+		var bounds = new google.maps.LatLngBounds();
+		for ( i = 0; i < markers.length; i++ ) {
+			marker = new google.maps.Marker( {
+				position: new google.maps.LatLng( markers[ i ].lat, markers[ i ].lng ),
 				map: map,
 			} );
+			bounds.extend( marker.getPosition() );
+		}
+		map.fitBounds( bounds );
+
+		var listener = google.maps.event.addListener( map, 'bounds_changed', function() { 
+			if ( map.getZoom() !== zoom ) map.setZoom( zoom ); 
+			google.maps.event.removeListener( listener ); 
 		} );
 	} );
 }

@@ -151,7 +151,7 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 		}
 
 		handleUpdateApiKey() {
-			axios( {
+			axios( { // not sending key as post - still get
 				method: 'post',
 				url: gutenGoogleMapsGlobal.ajaxUrl,
 				params: {

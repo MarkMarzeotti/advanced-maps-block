@@ -28,15 +28,24 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.0.0
  */
 function guten_google_maps_block_assets() { // phpcs:ignore
-	$deps  = is_admin() ? array( 'wp-editor' ) : false;
-	$key   = get_option( 'guten_google_maps_api_key' );
-	$nonce = wp_create_nonce( 'guten_google_maps_api_key_nonce' );
+	$key    = get_option( 'guten_google_maps_api_key' );
+
+	if ( is_admin() ) {
+		$style_deps         = array( 'wp-editor' );
+		$google_maps_params = null;
+		$google_maps_deps   = array();
+		$nonce              = wp_create_nonce( 'guten_google_maps_api_key_nonce' );
+	} else {
+		$style_deps         = array();
+		$google_maps_params = '&callback=gutenGoogleMapInit';
+		$google_maps_deps   = array( 'guten-google-maps-frontend-js' );
+	}
 
 	// Register block styles for both frontend + backend.
 	wp_register_style(
 		'guten-google-maps-style-css',
 		plugins_url( 'dist/blocks.style.build.css', dirname( __FILE__ ) ),
-		$deps,
+		$style_deps,
 		null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' )
 	);
 
@@ -44,7 +53,7 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 	wp_register_script(
 		'guten-google-maps-block-js',
 		plugins_url( '/dist/blocks.build.js', dirname( __FILE__ ) ),
-		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor', 'google-maps-be' ),
+		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor', 'google-maps' ),
 		null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
 		true
 	);
@@ -57,16 +66,18 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 		null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' )
 	);
 
-	// WP Localized globals.
-	wp_localize_script(
-		'guten-google-maps-block-js',
-		'gutenGoogleMapsGlobal',
-		[
-			'apiKey'  => get_option( 'guten_google_maps_api_key', '' ),
-			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-			'nonce'   => $nonce
-		]
-	);
+	if ( isset( $nonce ) ) {
+		// WP Localized globals.
+		wp_localize_script(
+			'guten-google-maps-block-js',
+			'gutenGoogleMapsGlobal',
+			[
+				'apiKey'  => get_option( 'guten_google_maps_api_key', '' ),
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => $nonce
+			]
+		);
+	}
 
 	// Register script for frontend.
 	if ( ! is_admin() ) {
@@ -80,25 +91,14 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 	}
 
 	if ( ! empty( $key ) ) {
-		// Register Google Maps API for frontend.
+		// Register Google Maps API for frontend and backend.
 		wp_register_script(
 			'google-maps',
-			'https://maps.googleapis.com/maps/api/js?key=' . $key . '&callback=gutenGoogleMapInit',
-			array( 'guten-google-maps-frontend-js' ),
+			'https://maps.googleapis.com/maps/api/js?key=' . $key . $google_maps_params,
+			$google_maps_deps,
 			null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
 			true
 		);
-
-		// Register Google Maps API for backend.
-		if ( true && is_admin() ) { // if block exists...
-			wp_register_script(
-				'google-maps-be',
-				'https://maps.googleapis.com/maps/api/js?key=' . $key,
-				array(),
-				null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
-				false
-			);
-		}
 	}
 
 	/**
@@ -116,13 +116,12 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 			// Enqueue blocks.style.build.css on both frontend & backend.
 			'style'         => 'guten-google-maps-style-css',
 			// Enqueue blocks.build.js in the editor only.
-			'script'        => 'google-maps-be',
 			'editor_script' => 'guten-google-maps-block-js',
 			// Enqueue blocks.editor.build.css in the editor only.
 			'editor_style'  => 'guten-google-maps-block-editor-css',
 			// Enqueue frontend.build.js on frontend.
 			'script'        => 'guten-google-maps-frontend-js',
-			// Enqueue Google Maps API on frontend.
+			// Enqueue Google Maps API on frontend and backend.
 			'script'        => 'google-maps',
 		)
 	);
@@ -134,9 +133,11 @@ add_action( 'init', 'guten_google_maps_block_assets' );
  */
 function guten_google_maps_update_api_key( $response ) {
 	check_ajax_referer( 'guten_google_maps_api_key_nonce' );
-	$guten_google_maps_api_key = $_GET['guten_google_maps_api_key'];
+
+	$guten_google_maps_api_key = sanitize_text_field( $_GET['guten_google_maps_api_key'] ); // maybe want to send as post
 	update_option( 'guten_google_maps_api_key', $guten_google_maps_api_key );
-	$response = json_encode( $_GET );
+
+	$response = json_encode( 'success' );
 	echo $response;
 	die();
 }

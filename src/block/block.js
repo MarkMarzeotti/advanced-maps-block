@@ -332,17 +332,10 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 			const advancedStylePalettePanel = this.state.apiKey ? <Fragment>
 				<TextareaControl
 					label={ __( 'JSON Style Profile' ) }
-					help={ __( 'Write your own style profile or use the Map Style Tool to generate one. Paste the generated code here. A value here will override the Map Style set in Quick Style Palettes.' ) }
 					value={ this.props.attributes.advancedStyle }
 					onChange={ ( advancedStyle ) => this.props.setAttributes( { advancedStyle } ) }
 				/>
-				<Button
-					href="https://mapstyle.withgoogle.com"
-					target="_blank"
-					isDefault
-				>
-					{ __( 'Map Style Tool' ) }
-				</Button>
+				<p>Write your own style profile or use <a href="https://mapstyle.withgoogle.com/" target="_blank" rel="noopener noreferrer">Google&apos;s Styling Wizard</a> to generate one. Paste the generated code here. A value here will override the Map Style set in Quick Style Palettes.</p>
 			</Fragment> : emptyPanel;
 
 			return [

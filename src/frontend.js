@@ -25,9 +25,9 @@ function gutenGoogleMapInit() {
 		}
 		map.fitBounds( bounds );
 
-		var listener = google.maps.event.addListener( map, 'bounds_changed', function() { 
-			if ( map.getZoom() !== zoom ) map.setZoom( zoom ); 
-			google.maps.event.removeListener( listener ); 
+		var listener = google.maps.event.addListener( map, 'bounds_changed', function() {
+			if ( map.getZoom() !== zoom ) map.setZoom( zoom );
+			google.maps.event.removeListener( listener );
 		} );
 	} );
 }

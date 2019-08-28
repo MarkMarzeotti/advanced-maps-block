@@ -6,13 +6,6 @@
 import './editor.scss';
 import './style.scss';
 
-import {
-	withScriptjs,
-	withGoogleMap,
-	GoogleMap,
-	Marker,
-} from 'react-google-maps';
-
 import Geocode from 'react-geocode';
 import axios from 'axios';
 
@@ -43,7 +36,7 @@ const {
 } = wp.element;
 
 /**
- * Register: Guten Google Map Block.
+ * Register: Guten Google Maps Block.
  *
  * @link https://wordpress.org/gutenberg/handbook/block-api/
  * @param  {string}   name     Block name.
@@ -95,7 +88,7 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 	keywords: [
 		__( 'map' ),
 		__( 'google' ),
-		__( 'guten google map' ),
+		__( 'google maps' ),
 	],
 	edit: class extends Component {
 		constructor() {
@@ -103,16 +96,58 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 
 			const locations = JSON.parse( this.props.attributes.locations );
 
+			const advancedStyleJSON = this.props.attributes.advancedStyle ? JSON.parse( this.props.attributes.advancedStyle ) : [];
+			const mapStyles = this.props.attributes.quickStyle !== 'standard' && ! this.props.attributes.advancedStyle ? defaultStyles[ this.props.attributes.quickStyle ] : [ ...advancedStyleJSON ];
+
 			this.state = {
 				apiKey: gutenGoogleMapsGlobal.apiKey, // AIzaSyCb0NahCEnubhm0zEaBcJKF4nPgrSZ3IQM
 				apiKeyUpdated: false,
 				locations,
 				locationsUpdated: false,
+				mapStyles,
 			};
 
 			if ( gutenGoogleMapsGlobal.apiKey ) {
 				Geocode.setApiKey( gutenGoogleMapsGlobal.apiKey );
 			}
+		}
+
+		componentDidMount() {
+			this.handleCreateGoogleMap();
+		}
+
+		handleCreateGoogleMap() {
+			const mapItem = document.body.querySelector( '[data-block="' + this.props.clientId + '"] div div' );
+
+			console.log( this.state.locations );
+
+			const markers = this.state.locations,
+				zoom = this.props.attributes.zoom,
+				scrollwheel = this.props.attributes.allowScrolling,
+				disableDefaultUI = this.props.attributes.defaultUI,
+				styles = this.state.mapStyles;
+
+			const map = new google.maps.Map( mapItem, {
+				scrollwheel: scrollwheel,
+				disableDefaultUI: disableDefaultUI,
+				styles: styles,
+			} );
+
+			let marker, i;
+			let bounds = new google.maps.LatLngBounds();
+			for ( i = 0; i < markers.length; i++ ) {
+				marker = new google.maps.Marker( {
+					position: new google.maps.LatLng( markers[ i ].lat, markers[ i ].lng ),
+					map: map,
+				} );
+				bounds.extend( marker.getPosition() );
+			}
+			map.fitBounds( bounds );
+
+			let listener = google.maps.event.addListener( map, 'bounds_changed', function() {
+				if ( map.getZoom() !== zoom ) map.setZoom( zoom );
+				google.maps.event.removeListener( listener );
+			} );
 		}
 
 		handleUpdateApiKey() {
@@ -155,13 +190,18 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 				locations,
 				locationsUpdated: true,
 			} );
+
+			this.handleCreateGoogleMap();
 		}
 
 		handleRemoveLocation( index ) {
 			const locations = this.state.locations;
 			locations.splice( index, 1 );
+
 			this.setState( { locations } );
 			this.props.setAttributes( { locations: JSON.stringify( locations ) } );
+
+			this.handleCreateGoogleMap();
 		}
 
 		handleLocationChange( address, index ) {
@@ -184,11 +224,14 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 							lng: response.results[ 0 ].geometry.location.lng,
 							address: response.results[ 0 ].formatted_address,
 						};
+
 						this.props.setAttributes( { locations: JSON.stringify( locations ) } );
 						this.setState( {
 							locations,
 							locationsUpdated: false,
-						} ); // somehow wait till the end to save?
+						} );
+
+						this.handleCreateGoogleMap();
 					},
 					error => {
 						console.log( error );
@@ -198,18 +241,11 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 		}
 
 		render() {
-			let markers = null;
 			let markerFields = null;
 
 			const locations = this.state.locations;
 
 			if ( locations.length ) {
-				markers = locations.map( ( location, index ) => {
-					return <Marker
-						key={ index }
-						position={ { lat: location.lat, lng: location.lng } }
-					/>;
-				} );
 
 				markerFields = locations.map( ( location, index ) => {
 					return <Fragment key={ index }>
@@ -230,35 +266,7 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 				} );
 			}
 
-			const advancedStyleJSON = this.props.attributes.advancedStyle ? JSON.parse( this.props.attributes.advancedStyle ) : [];
-			const mapStyles = this.props.attributes.quickStyle !== 'standard' && ! this.props.attributes.advancedStyle ? defaultStyles[ this.props.attributes.quickStyle ] : [ ...advancedStyleJSON ];
-
-			const mapCenter = this.state.locations[ 0 ] ? this.state.locations[ 0 ] : {
-				lat: 35.2270869,
-				lng: -80.8431267,
-				address: '',
-			};
-
-			const MapComponent = withScriptjs( withGoogleMap( () =>
-				<GoogleMap
-					defaultZoom={ this.props.attributes.zoom }
-					defaultCenter={ mapCenter }
-					defaultOptions={ {
-						disableDefaultUI: ! this.props.attributes.defaultUI,
-						scrollwheel: this.props.attributes.allowScrolling,
-						styles: [ ...mapStyles ],
-					} }
-				>
-					{ markers }
-				</GoogleMap>
-			) );
-
-			const map = <MapComponent
-				googleMapURL={ 'https://maps.googleapis.com/maps/api/js?key=' + this.state.apiKey }
-				loadingElement={ <div style={ { height: '100%' } } /> }
-				containerElement={ <div style={ { height: this.props.attributes.mapHeight + 'px' } } /> }
-				mapElement={ <div style={ { height: '100%' } } /> }
-			/>;
+			const map = <div style={ { height: this.props.attributes.mapHeight + 'px' } } />;
 
 			const emptyPanel = <p>Please add a <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" rel="noopener noreferrer">Google Maps API key</a>.</p>;
 

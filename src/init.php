@@ -44,7 +44,7 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 	wp_register_script(
 		'guten-google-maps-block-js',
 		plugins_url( '/dist/blocks.build.js', dirname( __FILE__ ) ),
-		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ),
+		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor', 'google-maps-be' ),
 		null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
 		true
 	);
@@ -79,8 +79,8 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 		);
 	}
 
-	// Register Google Maps API for frontend.
 	if ( ! empty( $key ) ) {
+		// Register Google Maps API for frontend.
 		wp_register_script(
 			'google-maps',
 			'https://maps.googleapis.com/maps/api/js?key=' . $key . '&callback=gutenGoogleMapInit',
@@ -88,6 +88,17 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 			null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
 			true
 		);
+
+		// Register Google Maps API for backend.
+		if ( true && is_admin() ) { // if block exists...
+			wp_register_script(
+				'google-maps-be',
+				'https://maps.googleapis.com/maps/api/js?key=' . $key,
+				array(),
+				null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
+				false
+			);
+		}
 	}
 
 	/**
@@ -105,6 +116,7 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 			// Enqueue blocks.style.build.css on both frontend & backend.
 			'style'         => 'guten-google-maps-style-css',
 			// Enqueue blocks.build.js in the editor only.
+			'script'        => 'google-maps-be',
 			'editor_script' => 'guten-google-maps-block-js',
 			// Enqueue blocks.editor.build.css in the editor only.
 			'editor_style'  => 'guten-google-maps-block-editor-css',

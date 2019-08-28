@@ -118,7 +118,7 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 add_action( 'init', 'guten_google_maps_block_assets' );
 
 /**
- * 
+ * AJAX script to update Google Maps API Key option.
  */
 function guten_google_maps_update_api_key( $response ) {
 	check_ajax_referer( 'guten_google_maps_api_key_nonce' );

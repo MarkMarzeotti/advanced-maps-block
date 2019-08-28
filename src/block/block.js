@@ -102,7 +102,6 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 			super( ...arguments );
 
 			const locations = JSON.parse( this.props.attributes.locations );
-			console.log( locations );
 
 			this.state = {
 				apiKey: gutenGoogleMapsGlobal.apiKey, // AIzaSyCb0NahCEnubhm0zEaBcJKF4nPgrSZ3IQM
@@ -167,9 +166,7 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 
 		handleLocationChange( address, index ) {
 			const locations = this.state.locations;
-			console.log( locations, index );
 			locations[ index ].address = address;
-			console.log( locations );
 			this.setState( {
 				locations,
 				locationsUpdated: true,
@@ -178,7 +175,6 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 
 		handleUpdateLocations() {
 			const locations = this.state.locations;
-			console.log( locations );
 
 			locations.map( ( location, index ) => {
 				Geocode.fromAddress( location.address ).then(
@@ -188,7 +184,6 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 							lng: response.results[ 0 ].geometry.location.lng,
 							address: response.results[ 0 ].formatted_address,
 						};
-						console.log( locations );
 						this.props.setAttributes( { locations: JSON.stringify( locations ) } );
 						this.setState( {
 							locations,
@@ -257,6 +252,13 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 					{ markers }
 				</GoogleMap>
 			) );
+
+			const map = <MapComponent
+				googleMapURL={ 'https://maps.googleapis.com/maps/api/js?key=' + this.state.apiKey }
+				loadingElement={ <div style={ { height: '100%' } } /> }
+				containerElement={ <div style={ { height: this.props.attributes.mapHeight + 'px' } } /> }
+				mapElement={ <div style={ { height: '100%' } } /> }
+			/>;
 
 			const emptyPanel = <p>Please add a <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" rel="noopener noreferrer">Google Maps API key</a>.</p>;
 
@@ -377,12 +379,7 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 					</PanelBody>
 				</InspectorControls>,
 				<div key="2" className={ this.props.className }>
-					<MapComponent
-						googleMapURL={ 'https://maps.googleapis.com/maps/api/js?key=' + this.state.apiKey }
-						loadingElement={ <div style={ { height: '100%' } } /> }
-						containerElement={ <div style={ { height: this.props.attributes.mapHeight + 'px' } } /> }
-						mapElement={ <div style={ { height: '100%' } } /> }
-					/>
+					{ map }
 				</div>,
 			];
 		}

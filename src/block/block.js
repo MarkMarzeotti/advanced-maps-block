@@ -101,10 +101,10 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 
 			this.state = {
 				apiKey: gutenGoogleMapsGlobal.apiKey, // AIzaSyCb0NahCEnubhm0zEaBcJKF4nPgrSZ3IQM
-				apiKeyUpdated: false,
 				locations,
 				locationsUpdated: false,
 				mapStyles,
+				mapShouldUpdate: false,
 			};
 
 			if ( gutenGoogleMapsGlobal.apiKey ) {
@@ -116,15 +116,20 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 			this.handleCreateGoogleMap();
 		}
 
+		componentDidUpdate() {
+			if ( this.state.mapShouldUpdate ) {
+				this.setState( { mapShouldUpdate: false } );
+				this.handleCreateGoogleMap();
+			}
+		}
+
 		handleCreateGoogleMap() {
 			const mapItem = document.body.querySelector( '[data-block="' + this.props.clientId + '"] div div' );
-
-			console.log( this.state.locations );
 
 			const markers = this.state.locations,
 				zoom = this.props.attributes.zoom,
 				scrollwheel = this.props.attributes.allowScrolling,
-				disableDefaultUI = this.props.attributes.defaultUI,
+				disableDefaultUI = ! this.props.attributes.defaultUI,
 				styles = this.state.mapStyles;
 
 			const map = new google.maps.Map( mapItem, {
@@ -156,7 +161,7 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 				url: gutenGoogleMapsGlobal.ajaxUrl,
 				params: {
 					action: 'guten_google_maps_update_api_key',
-					_ajax_nonce: gutenGoogleMapsGlobal.nonce,
+					_ajax_nonce: gutenGoogleMapsGlobal.nonce, // likely the wrong way - only 1 nonce per pageload
 					guten_google_maps_api_key: this.state.apiKey,
 				},
 			} )
@@ -190,18 +195,17 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 				locations,
 				locationsUpdated: true,
 			} );
-
-			this.handleCreateGoogleMap();
 		}
 
 		handleRemoveLocation( index ) {
 			const locations = this.state.locations;
 			locations.splice( index, 1 );
 
-			this.setState( { locations } );
 			this.props.setAttributes( { locations: JSON.stringify( locations ) } );
-
-			this.handleCreateGoogleMap();
+			this.setState( {
+				locations,
+				mapShouldUpdate: true,
+			} );
 		}
 
 		handleLocationChange( address, index ) {
@@ -229,9 +233,8 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 						this.setState( {
 							locations,
 							locationsUpdated: false,
+							mapShouldUpdate: true,
 						} );
-
-						this.handleCreateGoogleMap();
 					},
 					error => {
 						console.log( error );
@@ -246,7 +249,6 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 			const locations = this.state.locations;
 
 			if ( locations.length ) {
-
 				markerFields = locations.map( ( location, index ) => {
 					return <Fragment key={ index }>
 						<TextControl
@@ -275,12 +277,18 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 					label={ __( 'Map Height' ) }
 					type="number"
 					value={ this.props.attributes.mapHeight }
-					onChange={ ( mapHeight ) => this.props.setAttributes( { mapHeight: JSON.parse( mapHeight ) } ) }
+					onChange={ ( mapHeight ) => {
+						this.props.setAttributes( { mapHeight: JSON.parse( mapHeight ) } );
+						this.setState( { mapShouldUpdate: true } );
+					} }
 				/>
 				<RangeControl
 					label={ __( 'Zoom' ) }
 					value={ this.props.attributes.zoom }
-					onChange={ ( zoom ) => this.props.setAttributes( { zoom } ) }
+					onChange={ ( zoom ) => {
+						this.props.setAttributes( { zoom } );
+						this.setState( { mapShouldUpdate: true } );
+					} }
 					min={ 1 }
 					max={ 20 }
 				/>
@@ -288,13 +296,19 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 					label={ __( 'Show Default UI' ) }
 					help={ this.props.attributes.defaultUI ? 'Default UI is enabled.' : 'Default UI is disabled.' }
 					checked={ this.props.attributes.defaultUI }
-					onChange={ () => this.props.setAttributes( { defaultUI: ! this.props.attributes.defaultUI } ) }
+					onChange={ () => {
+						this.props.setAttributes( { defaultUI: ! this.props.attributes.defaultUI } );
+						this.setState( { mapShouldUpdate: true } );
+					} }
 				/>
 				<ToggleControl
 					label={ __( 'Allow Scrolling' ) }
 					help={ this.props.attributes.allowScrolling ? 'Scrolling is allowed.' : 'Scrolling is not allowed.' }
 					checked={ this.props.attributes.allowScrolling }
-					onChange={ () => this.props.setAttributes( { allowScrolling: ! this.props.attributes.allowScrolling } ) }
+					onChange={ () => {
+						this.props.setAttributes( { allowScrolling: ! this.props.attributes.allowScrolling } );
+						this.setState( { mapShouldUpdate: true } );
+					} }
 				/>
 			</Fragment> : emptyPanel;
 

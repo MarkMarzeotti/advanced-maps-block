@@ -229,15 +229,17 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 							address: response.results[ 0 ].formatted_address,
 						};
 
-						this.props.setAttributes( { locations: JSON.stringify( locations ) } );
-						this.setState( {
-							locations,
-							locationsUpdated: false,
-							mapShouldUpdate: true,
-						} );
+						if ( index === locations.length - 1 ) {
+							this.props.setAttributes( { locations: JSON.stringify( locations ) } );
+							this.setState( {
+								locations,
+								locationsUpdated: false,
+								mapShouldUpdate: true,
+							} );
+						}
 					},
 					error => {
-						console.log( error );
+						console.error( error );
 					}
 				);
 			} );
@@ -340,14 +342,26 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 					{ label: 'Night', value: 'night' },
 					{ label: 'Aubergine', value: 'aubergine' },
 				] }
-				onChange={ ( quickStyle ) => this.props.setAttributes( { quickStyle } ) }
+				onChange={ ( quickStyle ) => {
+					const advancedStyleJSON = this.props.attributes.advancedStyle ? JSON.parse( this.props.attributes.advancedStyle ) : [];
+					const mapStyles = quickStyle !== 'standard' && ! this.props.attributes.advancedStyle ? defaultStyles[ quickStyle ] : [ ...advancedStyleJSON ];
+
+					this.props.setAttributes( { quickStyle } );
+					this.setState( { mapStyles, mapShouldUpdate: true } );
+				} }
 			/> : emptyPanel;
 
 			const advancedStylePalettePanel = this.state.apiKey ? <Fragment>
 				<TextareaControl
 					label={ __( 'JSON Style Profile' ) }
 					value={ this.props.attributes.advancedStyle }
-					onChange={ ( advancedStyle ) => this.props.setAttributes( { advancedStyle } ) }
+					onChange={ ( advancedStyle ) => {
+						const advancedStyleJSON = advancedStyle ? JSON.parse( advancedStyle ) : [];
+						const mapStyles = this.props.attributes.quickStyle !== 'standard' && ! advancedStyle ? defaultStyles[ this.props.attributes.quickStyle ] : [ ...advancedStyleJSON ];
+
+						this.props.setAttributes( { advancedStyle } );
+						this.setState( { mapStyles, mapShouldUpdate: true } );
+					} }
 				/>
 				<p>Write your own style profile or use <a href="https://mapstyle.withgoogle.com/" target="_blank" rel="noopener noreferrer">Google&apos;s Styling Wizard</a> to generate one. Paste the generated code here. A value here will override the Map Style set in Quick Style Palettes.</p>
 			</Fragment> : emptyPanel;

@@ -28,4 +28,22 @@
         margin-top: 1px;
         padding: 5px 5px 4px;
     }
+
+    &__overlay {
+        background-color: #f3f4f5;
+        padding: 40px;
+        position: relative;
+        z-index: 100;
+
+        h3 {
+            font-size: 26px;
+            margin: 0;
+            text-align: center;
+        }
+
+        p {
+            font-size: 18px;
+            text-align: center;
+        }
+    }
 }

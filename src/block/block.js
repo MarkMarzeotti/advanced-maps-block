@@ -9,6 +9,8 @@ import './style.scss';
 import Geocode from 'react-geocode';
 import axios from 'axios';
 
+import scriptjs from 'scriptjs';
+
 import defaultStyles from './default-styles.json';
 
 const {
@@ -99,32 +101,67 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 			const advancedStyleJSON = this.props.attributes.advancedStyle ? JSON.parse( this.props.attributes.advancedStyle ) : [];
 			const mapStyles = this.props.attributes.quickStyle !== 'standard' && ! this.props.attributes.advancedStyle ? defaultStyles[ this.props.attributes.quickStyle ] : [ ...advancedStyleJSON ];
 
+			const apiKey = gutenGoogleMapsGlobal.apiKey;
+
 			this.state = {
-				apiKey: gutenGoogleMapsGlobal.apiKey, // AIzaSyCb0NahCEnubhm0zEaBcJKF4nPgrSZ3IQM
+				apiKey,
 				locations,
 				locationsUpdated: false,
 				mapStyles,
 				mapShouldUpdate: false,
 			};
-
-			if ( gutenGoogleMapsGlobal.apiKey ) {
-				Geocode.setApiKey( gutenGoogleMapsGlobal.apiKey );
-			}
 		}
 
 		componentDidMount() {
-			this.handleCreateGoogleMap();
+			if ( this.state.apiKey ) {
+				this.handleApplyApiKey( this.state.apiKey );
+			}
 		}
 
 		componentDidUpdate() {
-			if ( this.state.mapShouldUpdate ) {
+			if ( this.state.apiKey && this.state.mapShouldUpdate ) {
 				this.setState( { mapShouldUpdate: false } );
 				this.handleCreateGoogleMap();
 			}
 		}
 
+		handleUpdateApiKey() {
+			axios( { // not sending key as post - still get
+				method: 'post',
+				url: gutenGoogleMapsGlobal.ajaxUrl,
+				params: {
+					action: 'guten_google_maps_update_api_key',
+					_ajax_nonce: gutenGoogleMapsGlobal.nonce, // likely the wrong way - only 1 nonce per pageload
+					guten_google_maps_api_key: this.state.apiKey,
+				},
+			} )
+				.then( response => {
+					this.handleApplyApiKey( this.state.apiKey );
+				} )
+				.catch( error => {
+					console.log( error );
+				} );
+		}
+
+		handleApplyApiKey( apiKey ) {
+			const googleMapsApi = document.querySelectorAll( '[href*="https://maps.googleapis.com/maps/api/js?key="' );
+			if ( googleMapsApi.length ) {
+				document.body.removeChild( googleMapsApi );
+			}
+
+			if ( apiKey ) {
+				scriptjs.get( 'https://maps.googleapis.com/maps/api/js?key=' + apiKey, () => {
+					Geocode.setApiKey( apiKey );
+					this.props.setAttributes( { apiKey } );
+					this.handleCreateGoogleMap();
+				} );
+			} else {
+				this.props.setAttributes( { apiKey: '' } );
+			}
+		}
+
 		handleCreateGoogleMap() {
-			const mapItem = document.body.querySelector( '[data-block="' + this.props.clientId + '"] div div' );
+			const mapItem = document.body.querySelector( '[data-block="' + this.props.clientId + '"] .guten-google-map' );
 
 			const markers = this.state.locations,
 				zoom = this.props.attributes.zoom,
@@ -153,25 +190,6 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 				if ( map.getZoom() !== zoom ) map.setZoom( zoom );
 				google.maps.event.removeListener( listener );
 			} );
-		}
-
-		handleUpdateApiKey() {
-			axios( { // not sending key as post - still get
-				method: 'post',
-				url: gutenGoogleMapsGlobal.ajaxUrl,
-				params: {
-					action: 'guten_google_maps_update_api_key',
-					_ajax_nonce: gutenGoogleMapsGlobal.nonce, // likely the wrong way - only 1 nonce per pageload
-					guten_google_maps_api_key: this.state.apiKey,
-				},
-			} )
-				.then( function( response ) {
-					Geocode.setApiKey( this.state.apiKey );
-					this.props.setAttributes( { apiKey: this.state.apiKey } );
-				} )
-				.catch( function( error ) {
-					console.log( error );
-				} );
 		}
 
 		handleAddLocation() {
@@ -270,7 +288,23 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 				} );
 			}
 
-			const map = <div style={ { height: this.props.attributes.mapHeight + 'px' } } />;
+			const map = this.props.attributes.apiKey ? <div className="guten-google-map" style={ { height: this.props.attributes.mapHeight + 'px' } } /> : <div className="empty-api">
+				<div className="guten-google-maps__overlay">
+					<h3>Guten Google Maps</h3>
+					<p>Please add your <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" rel="noopener noreferrer">Google Maps API Key</a> to use the Guten Google Map block and all its tasty features.</p>
+					<TextControl
+						label={ __( 'API Key' ) }
+						value={ this.state.apiKey }
+						onChange={ ( apiKey ) => this.setState( { apiKey } ) }
+					/>
+					<Button
+						isDefault
+						onClick={ this.handleUpdateApiKey.bind( this ) }
+					>
+						{ __( 'Apply API Key' ) }
+					</Button>
+				</div>
+			</div>;
 
 			const emptyPanel = <p>Please add a <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" rel="noopener noreferrer">Google Maps API key</a>.</p>;
 
@@ -377,12 +411,12 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 							value={ this.state.apiKey }
 							onChange={ ( apiKey ) => this.setState( { apiKey } ) }
 						/>
-						<Button
+						{ this.state.apiKey !== this.props.attributes.apiKey ? <Button
 							isDefault
 							onClick={ this.handleUpdateApiKey.bind( this ) }
 						>
 							{ __( 'Apply API Key' ) }
-						</Button>
+						</Button> : null }
 					</PanelBody>
 					<PanelBody
 						title={ __( 'Map Defaults' ) }

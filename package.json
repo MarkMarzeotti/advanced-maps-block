@@ -40,7 +40,8 @@
   },
   "devDependencies": {
     "axios": "^0.19.0",
-    "react-geocode": "^0.1.2"
+    "react-geocode": "^0.1.2",
+    "scriptjs": "^2.5.9"
   },
   "babel": {
     "presets": [

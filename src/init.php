@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.0.0
  */
 function guten_google_maps_block_assets() { // phpcs:ignore
-	$key    = get_option( 'guten_google_maps_api_key' );
+	$key = get_option( 'guten_google_maps_api_key' );
 
 	if ( is_admin() ) {
 		$style_deps         = array( 'wp-editor' );
@@ -48,12 +48,12 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 		$style_deps,
 		null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' )
 	);
-
+	
 	// Register block editor script for backend.
 	wp_register_script(
 		'guten-google-maps-block-js',
 		plugins_url( '/dist/blocks.build.js', dirname( __FILE__ ) ),
-		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor', 'google-maps' ),
+		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ),
 		null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
 		true
 	);
@@ -66,7 +66,7 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 		null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' )
 	);
 
-	if ( isset( $nonce ) ) {
+	if ( isset( $nonce ) && is_admin() ) {
 		// WP Localized globals.
 		wp_localize_script(
 			'guten-google-maps-block-js',
@@ -88,14 +88,12 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 			null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
 			true
 		);
-	}
 
-	if ( ! empty( $key ) ) {
 		// Register Google Maps API for frontend and backend.
 		wp_register_script(
 			'google-maps',
 			'https://maps.googleapis.com/maps/api/js?key=' . $key . $google_maps_params,
-			$google_maps_deps,
+			array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor', 'guten-google-maps-frontend-js' ),
 			null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
 			true
 		);
@@ -121,7 +119,7 @@ function guten_google_maps_block_assets() { // phpcs:ignore
 			'editor_style'  => 'guten-google-maps-block-editor-css',
 			// Enqueue frontend.build.js on frontend.
 			'script'        => 'guten-google-maps-frontend-js',
-			// Enqueue Google Maps API on frontend and backend.
+			// Enqueue Google Maps API on frontend.
 			'script'        => 'google-maps',
 		)
 	);

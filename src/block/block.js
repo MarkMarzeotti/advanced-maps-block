@@ -1,5 +1,5 @@
 /**
- * BLOCK: Advanced Gutenberg Google Map
+ * BLOCK: Advanced Maps Block
  */
 
 import './editor.scss';
@@ -37,7 +37,7 @@ const {
 } = wp.element;
 
 /**
- * Register: Advanced Gutenberg Google Maps Block.
+ * Register: Advanced Maps Block.
  *
  * @link https://wordpress.org/gutenberg/handbook/block-api/
  * @param  {string}   name     Block name.
@@ -45,8 +45,8 @@ const {
  * @return {?WPBlock}          The block, if it has been successfully
  *                             registered; otherwise `undefined`.
  */
-registerBlockType( 'aggm/advanced-gutenberg-google-maps', {
-	title: __( 'Advanced Gutenberg Google Map' ),
+registerBlockType( 'amb/advanced-maps-block', {
+	title: __( 'Advanced Maps Block' ),
 	icon: 'location',
 	category: 'common',
 	attributes: {
@@ -106,7 +106,7 @@ registerBlockType( 'aggm/advanced-gutenberg-google-maps', {
 			const advancedStyleJSON = this.props.attributes.advancedStyle ? JSON.parse( this.props.attributes.advancedStyle ) : [];
 			const mapStyles = this.props.attributes.quickStyle !== 'standard' && ! this.props.attributes.advancedStyle ? defaultStyles[ this.props.attributes.quickStyle ] : [ ...advancedStyleJSON ];
 
-			const apiKey = advancedGutenbergGoogleMapsGlobal.apiKey;
+			const apiKey = advancedMapsBlockGlobal.apiKey;
 
 			this.state = {
 				apiKey,
@@ -135,11 +135,11 @@ registerBlockType( 'aggm/advanced-gutenberg-google-maps', {
 		handleUpdateApiKey() {
 			axios( {
 				method: 'post',
-				url: advancedGutenbergGoogleMapsGlobal.ajaxUrl,
+				url: advancedMapsBlockGlobal.ajaxUrl,
 				params: {
-					action: 'advanced_gutenberg_google_maps_update_api_key',
-					_ajax_nonce: advancedGutenbergGoogleMapsGlobal.nonce,
-					advanced_gutenberg_google_maps_api_key: this.state.apiKey,
+					action: 'advanced_maps_block_update_api_key',
+					_ajax_nonce: advancedMapsBlockGlobal.nonce,
+					advanced_maps_block_api_key: this.state.apiKey,
 				},
 			} )
 				.then( response => {
@@ -204,7 +204,7 @@ registerBlockType( 'aggm/advanced-gutenberg-google-maps', {
 		}
 
 		handleCreateGoogleMap() {
-			const mapItem = document.body.querySelector( '[data-block="' + this.props.clientId + '"] .advanced-gutenberg-google-map' );
+			const mapItem = document.body.querySelector( '[data-block="' + this.props.clientId + '"] .advanced-maps-block' );
 
 			const markers = this.state.locations,
 				center = this.state.mapCenter,
@@ -323,13 +323,13 @@ registerBlockType( 'aggm/advanced-gutenberg-google-maps', {
 					return <Fragment key={ index }>
 						<TextControl
 							data-index={ index }
-							className="advanced-gutenberg-google-maps__marker-address"
+							className="advanced-maps-block__marker-address"
 							placeholder="350 Fifth Avenue New York NY"
 							value={ this.state.locations[ index ].address }
 							onChange={ ( address ) => this.handleLocationChange( address, index ) }
 						/>
 						<IconButton
-							className="advanced-gutenberg-google-maps__remove-marker-address"
+							className="advanced-maps-block__remove-marker-address"
 							icon="no-alt"
 							label="Delete Marker"
 							onClick={ () => this.handleRemoveLocation( index ) }
@@ -338,10 +338,10 @@ registerBlockType( 'aggm/advanced-gutenberg-google-maps', {
 				} );
 			}
 
-			const map = this.props.attributes.apiKey ? <div className="advanced-gutenberg-google-map" style={ { height: this.props.attributes.mapHeight + 'px' } } /> : <div className="empty-api">
-				<div className="advanced-gutenberg-google-maps__overlay">
-					<h3>Advanced Gutenberg Google Maps</h3>
-					<p>Please add your <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" rel="noopener noreferrer">Google Maps API Key</a> to use the Advanced Gutenberg Google Map block and all its tasty features.</p>
+			const map = this.props.attributes.apiKey ? <div className="advanced-maps-block" style={ { height: this.props.attributes.mapHeight + 'px' } } /> : <div className="empty-api">
+				<div className="advanced-maps-block__overlay">
+					<h3>Advanced Maps Blocks</h3>
+					<p>Please add your <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" rel="noopener noreferrer">Google Maps API Key</a> to use the Advanced Maps Block block and all its tasty features.</p>
 					<TextControl
 						label={ __( 'API Key' ) }
 						value={ this.state.apiKey }
@@ -471,7 +471,7 @@ registerBlockType( 'aggm/advanced-gutenberg-google-maps', {
 				<InspectorControls key="1">
 					<PanelBody
 						title={ __( 'Google Maps API Key' ) }
-						initialOpen={ ! advancedGutenbergGoogleMapsGlobal.apiKey }
+						initialOpen={ ! advancedMapsBlockGlobal.apiKey }
 					>
 						<TextControl
 							label={ __( 'API Key' ) }
@@ -525,7 +525,7 @@ registerBlockType( 'aggm/advanced-gutenberg-google-maps', {
 
 		return (
 			<div className={ props.className }>
-				<div className="advanced-gutenberg-google-maps"
+				<div className="advanced-maps-block"
 					style={ { height: props.attributes.mapHeight + 'px' } }
 					data-markers={ props.attributes.locations }
 					data-center={ props.attributes.mapCenter }

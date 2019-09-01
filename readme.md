@@ -1,4 +1,4 @@
-# Advanced Gutenberg Google Maps
+# Advanced Maps Blocks
 
 A Google Maps implementation for the WordPress Gutenberg block editor.
 

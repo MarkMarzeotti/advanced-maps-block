@@ -3,6 +3,7 @@ function gutenGoogleMapInit() {
 
 	Array.prototype.forEach.call( maps, function( mapItem ) {
 		var markers = JSON.parse( mapItem.dataset.markers ),
+			center = JSON.parse( mapItem.dataset.center ),
 			zoom = JSON.parse( mapItem.dataset.zoom ),
 			scrollwheel = JSON.parse( mapItem.dataset.scrollwheel ),
 			disableDefaultUI = JSON.parse( mapItem.dataset.disabledefaultui ),
@@ -17,13 +18,19 @@ function gutenGoogleMapInit() {
 		var marker, i;
 		var bounds = new google.maps.LatLngBounds();
 		for ( i = 0; i < markers.length; i++ ) {
-			marker = new google.maps.Marker( {
-				position: new google.maps.LatLng( markers[ i ].lat, markers[ i ].lng ),
-				map: map,
-			} );
-			bounds.extend( marker.getPosition() );
+			if ( markers[ i ].lat && markers[ i ].lng ) {
+				marker = new google.maps.Marker( {
+					position: new google.maps.LatLng( markers[ i ].lat, markers[ i ].lng ),
+					map: map,
+				} );
+				bounds.extend( marker.getPosition() );
+			}
 		}
-		map.fitBounds( bounds );
+		if ( ! center.lat && ! center.lng ) {
+			map.fitBounds( bounds );
+		} else {
+			map.setCenter( { lat: center.lat, lng: center.lng } );
+		}
 
 		var listener = google.maps.event.addListener( map, 'bounds_changed', function() {
 			if ( map.getZoom() !== zoom ) map.setZoom( zoom );

@@ -55,6 +55,10 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 			type: 'string',
 			default: '',
 		},
+		mapCenter: {
+			type: 'string',
+			default: '{}',
+		},
 		locations: {
 			type: 'string',
 			default: '[]',
@@ -98,6 +102,8 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 
 			const locations = JSON.parse( this.props.attributes.locations );
 
+			const mapCenter = JSON.parse( this.props.attributes.mapCenter );
+
 			const advancedStyleJSON = this.props.attributes.advancedStyle ? JSON.parse( this.props.attributes.advancedStyle ) : [];
 			const mapStyles = this.props.attributes.quickStyle !== 'standard' && ! this.props.attributes.advancedStyle ? defaultStyles[ this.props.attributes.quickStyle ] : [ ...advancedStyleJSON ];
 
@@ -107,6 +113,8 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 				apiKey,
 				locations,
 				locationsUpdated: false,
+				mapCenter,
+				mapCenterUpdated: false,
 				mapStyles,
 				mapShouldUpdate: false,
 			};
@@ -160,10 +168,47 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 			}
 		}
 
+		handleMapCenterChange( address ) {
+			const mapCenter = {
+				lat: 0,
+				long: 0,
+				address,
+			};
+			this.setState( {
+				mapCenter,
+				mapCenterUpdated: true,
+			} );
+			this.props.setAttributes( { mapCenter: JSON.stringify( mapCenter ) } );
+		}
+
+		handleUpdateMapCenter() {
+			let mapCenter = this.state.mapCenter;
+			Geocode.fromAddress( mapCenter.address ).then(
+				response => {
+					mapCenter = {
+						lat: response.results[ 0 ].geometry.location.lat,
+						lng: response.results[ 0 ].geometry.location.lng,
+						address: response.results[ 0 ].formatted_address,
+					};
+
+					this.props.setAttributes( { mapCenter: JSON.stringify( mapCenter ) } );
+					this.setState( {
+						mapCenter,
+						mapCenterUpdated: false,
+						mapShouldUpdate: true,
+					} );
+				},
+				error => {
+					console.error( error );
+				}
+			);
+		}
+
 		handleCreateGoogleMap() {
 			const mapItem = document.body.querySelector( '[data-block="' + this.props.clientId + '"] .guten-google-map' );
 
 			const markers = this.state.locations,
+				center = this.state.mapCenter,
 				zoom = this.props.attributes.zoom,
 				scrollwheel = this.props.attributes.allowScrolling,
 				disableDefaultUI = ! this.props.attributes.defaultUI,
@@ -178,13 +223,19 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 			let marker, i;
 			let bounds = new google.maps.LatLngBounds();
 			for ( i = 0; i < markers.length; i++ ) {
-				marker = new google.maps.Marker( {
-					position: new google.maps.LatLng( markers[ i ].lat, markers[ i ].lng ),
-					map: map,
-				} );
-				bounds.extend( marker.getPosition() );
+				if ( markers[ i ].lat && markers[ i ].lng ) {
+					marker = new google.maps.Marker( {
+						position: { lat: markers[ i ].lat, lng: markers[ i ].lng },
+						map: map,
+					} );
+					bounds.extend( marker.getPosition() );
+				}
 			}
-			map.fitBounds( bounds );
+			if ( ! center.lat && ! center.lng ) {
+				map.fitBounds( bounds );
+			} else {
+				map.setCenter( { lat: center.lat, lng: center.lng } );
+			}
 
 			let listener = google.maps.event.addListener( map, 'bounds_changed', function() {
 				if ( map.getZoom() !== zoom ) map.setZoom( zoom );
@@ -197,14 +248,14 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 
 			if ( locations.length ) {
 				locations.push( {
-					lat: 35.2270869,
-					lng: -80.8431267,
+					lat: 0,
+					lng: 0,
 					address: '',
 				} );
 			} else {
 				locations = [ {
-					lat: 35.2270869,
-					lng: -80.8431267,
+					lat: 0,
+					lng: 0,
 					address: '',
 				} ];
 			}
@@ -348,20 +399,37 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 				/>
 			</Fragment> : emptyPanel;
 
+			const mapCenterPanel = this.state.apiKey ? <Fragment>
+				<p>Map center will be determined based on marker locations if one is not specified. Use this field if you are not going to use any markers on the map or you wish to override the determined center.</p>
+				<TextControl
+					label={ __( 'Map Center' ) }
+					placeholder="New York NY"
+					value={ this.state.mapCenter.address }
+					onChange={ ( mapCenter ) => this.handleMapCenterChange( mapCenter ) }
+				/>
+				{ this.state.mapCenterUpdated && <Button
+					isPrimary
+					onClick={ this.handleUpdateMapCenter.bind( this ) }
+				>
+					{ __( 'Apply Map Center Update' ) }
+				</Button> }
+			</Fragment> : emptyPanel;
+
 			const mapMarkersPanel = this.state.apiKey ? <Fragment>
 				{ markerFields }
 				<Button
 					isDefault
+					style={ { marginRight: '10px' } }
 					onClick={ this.handleAddLocation.bind( this ) }
 				>
 					{ __( 'Add Marker' ) }
 				</Button>
 				{ this.state.locationsUpdated && <Button
 					isPrimary
-					style={ { marginLeft: '10px' } }
+					style={ { marginTop: '10px' } }
 					onClick={ this.handleUpdateLocations.bind( this ) }
 				>
-					{ __( 'Apply Updates' ) }
+					{ __( 'Apply Marker Updates' ) }
 				</Button> }
 			</Fragment> : emptyPanel;
 
@@ -424,6 +492,11 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 						{ mapDefaultsPanel }
 					</PanelBody>
 					<PanelBody
+						title={ __( 'Map Center' ) }
+					>
+						{ mapCenterPanel }
+					</PanelBody>
+					<PanelBody
 						title={ __( 'Map Markers' ) }
 					>
 						{ mapMarkersPanel }
@@ -456,6 +529,7 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 				<div className="guten-google-maps"
 					style={ { height: props.attributes.mapHeight + 'px' } }
 					data-markers={ props.attributes.locations }
+					data-center={ props.attributes.mapCenter }
 					data-zoom={ props.attributes.zoom }
 					data-scrollwheel={ props.attributes.allowScrolling }
 					data-disabledefaultui={ ! props.attributes.defaultUI }

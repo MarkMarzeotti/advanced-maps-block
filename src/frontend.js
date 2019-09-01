@@ -1,5 +1,5 @@
 function gutenGoogleMapInit() {
-	var maps = document.getElementsByClassName( 'guten-google-maps' );
+	var maps = document.getElementsByClassName( 'advanced-gutenberg-google-maps' );
 
 	Array.prototype.forEach.call( maps, function( mapItem ) {
 		var markers = JSON.parse( mapItem.dataset.markers ),

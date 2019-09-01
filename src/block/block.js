@@ -1,8 +1,7 @@
 /**
- * BLOCK: Guten Google Map
+ * BLOCK: Advanced Gutenberg Google Map
  */
 
-//  Import CSS.
 import './editor.scss';
 import './style.scss';
 
@@ -38,7 +37,7 @@ const {
 } = wp.element;
 
 /**
- * Register: Guten Google Maps Block.
+ * Register: Advanced Gutenberg Google Maps Block.
  *
  * @link https://wordpress.org/gutenberg/handbook/block-api/
  * @param  {string}   name     Block name.
@@ -46,8 +45,8 @@ const {
  * @return {?WPBlock}          The block, if it has been successfully
  *                             registered; otherwise `undefined`.
  */
-registerBlockType( 'guten-google-maps/guten-google-maps', {
-	title: __( 'Guten Google Map' ),
+registerBlockType( 'aggm/advanced-gutenberg-google-maps', {
+	title: __( 'Advanced Gutenberg Google Map' ),
 	icon: 'location',
 	category: 'common',
 	attributes: {
@@ -107,7 +106,7 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 			const advancedStyleJSON = this.props.attributes.advancedStyle ? JSON.parse( this.props.attributes.advancedStyle ) : [];
 			const mapStyles = this.props.attributes.quickStyle !== 'standard' && ! this.props.attributes.advancedStyle ? defaultStyles[ this.props.attributes.quickStyle ] : [ ...advancedStyleJSON ];
 
-			const apiKey = gutenGoogleMapsGlobal.apiKey;
+			const apiKey = advancedGutenbergGoogleMapsGlobal.apiKey;
 
 			this.state = {
 				apiKey,
@@ -134,13 +133,13 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 		}
 
 		handleUpdateApiKey() {
-			axios( { // not sending key as post - still get
+			axios( {
 				method: 'post',
-				url: gutenGoogleMapsGlobal.ajaxUrl,
+				url: advancedGutenbergGoogleMapsGlobal.ajaxUrl,
 				params: {
-					action: 'guten_google_maps_update_api_key',
-					_ajax_nonce: gutenGoogleMapsGlobal.nonce, // likely the wrong way - only 1 nonce per pageload
-					guten_google_maps_api_key: this.state.apiKey,
+					action: 'advanced_gutenberg_google_maps_update_api_key',
+					_ajax_nonce: advancedGutenbergGoogleMapsGlobal.nonce,
+					advanced_gutenberg_google_maps_api_key: this.state.apiKey,
 				},
 			} )
 				.then( response => {
@@ -205,7 +204,7 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 		}
 
 		handleCreateGoogleMap() {
-			const mapItem = document.body.querySelector( '[data-block="' + this.props.clientId + '"] .guten-google-map' );
+			const mapItem = document.body.querySelector( '[data-block="' + this.props.clientId + '"] .advanced-gutenberg-google-map' );
 
 			const markers = this.state.locations,
 				center = this.state.mapCenter,
@@ -324,13 +323,13 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 					return <Fragment key={ index }>
 						<TextControl
 							data-index={ index }
-							className="guten-google-maps__marker-address"
+							className="advanced-gutenberg-google-maps__marker-address"
 							placeholder="350 Fifth Avenue New York NY"
 							value={ this.state.locations[ index ].address }
 							onChange={ ( address ) => this.handleLocationChange( address, index ) }
 						/>
 						<IconButton
-							className="guten-google-maps__remove-marker-address"
+							className="advanced-gutenberg-google-maps__remove-marker-address"
 							icon="no-alt"
 							label="Delete Marker"
 							onClick={ () => this.handleRemoveLocation( index ) }
@@ -339,10 +338,10 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 				} );
 			}
 
-			const map = this.props.attributes.apiKey ? <div className="guten-google-map" style={ { height: this.props.attributes.mapHeight + 'px' } } /> : <div className="empty-api">
-				<div className="guten-google-maps__overlay">
-					<h3>Guten Google Maps</h3>
-					<p>Please add your <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" rel="noopener noreferrer">Google Maps API Key</a> to use the Guten Google Map block and all its tasty features.</p>
+			const map = this.props.attributes.apiKey ? <div className="advanced-gutenberg-google-map" style={ { height: this.props.attributes.mapHeight + 'px' } } /> : <div className="empty-api">
+				<div className="advanced-gutenberg-google-maps__overlay">
+					<h3>Advanced Gutenberg Google Maps</h3>
+					<p>Please add your <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" rel="noopener noreferrer">Google Maps API Key</a> to use the Advanced Gutenberg Google Map block and all its tasty features.</p>
 					<TextControl
 						label={ __( 'API Key' ) }
 						value={ this.state.apiKey }
@@ -472,7 +471,7 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 				<InspectorControls key="1">
 					<PanelBody
 						title={ __( 'Google Maps API Key' ) }
-						initialOpen={ ! gutenGoogleMapsGlobal.apiKey }
+						initialOpen={ ! advancedGutenbergGoogleMapsGlobal.apiKey }
 					>
 						<TextControl
 							label={ __( 'API Key' ) }
@@ -526,7 +525,7 @@ registerBlockType( 'guten-google-maps/guten-google-maps', {
 
 		return (
 			<div className={ props.className }>
-				<div className="guten-google-maps"
+				<div className="advanced-gutenberg-google-maps"
 					style={ { height: props.attributes.mapHeight + 'px' } }
 					data-markers={ props.attributes.locations }
 					data-center={ props.attributes.mapCenter }

@@ -7,3 +7,5 @@ coverage
 cypress
 node_modules
 vendor
+
+src/frontend.js

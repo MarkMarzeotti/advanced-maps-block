@@ -1,13 +1,19 @@
 <?php
 /**
  * Plugin Name: Advanced Maps Block
- * Plugin URI: https://markmarzeotti.com/
  * Description: Easy to use Google Maps block for the WordPress block editor featuring multiple map markers and unlimited style options. Use with a Google Maps JavaScript API key.
  * Author: Mark Marzeotti
  * Author URI: https://markmarzeotti.com/
  * Version: 0.1.0
- * License: GPL2+
- * License URI: https://www.gnu.org/licenses/gpl-2.0.txt
+ * Tested up to: 5.2.2
+ *
+ * Advanced Maps Block is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 2 of the License, or
+ * any later version.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Advanced Maps Block. If not, see <http://www.gnu.org/licenses/>.
  *
  * @package Advanced_Maps_Block
  */

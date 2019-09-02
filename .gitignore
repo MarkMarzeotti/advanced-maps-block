@@ -1,5 +1,5 @@
 node_modules
-apikey.txt
+.DS_Store
 
 ## Uncomment line below if you prefer to
 ## keep compiled files out of version control

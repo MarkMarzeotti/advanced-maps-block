@@ -4,7 +4,7 @@
  *
  * Enqueue CSS/JS of all the blocks.
  *
- * @since   1.0.0
+ * @since   0.1.0
  * @package Advanced_Maps_Block
  */
 
@@ -42,21 +42,13 @@ function advanced_maps_block_block_assets() { // phpcs:ignore
 		$google_maps_params = '&callback=advancedMapsBlockInit';
 		$google_maps_deps   = array( 'advanced-maps-block-frontend-js' );
 	}
-
-	// Register block styles for both frontend + backend.
-	wp_register_style(
-		'advanced-maps-block-style-css',
-		plugins_url( 'dist/blocks.style.build.css', dirname( __FILE__ ) ),
-		$style_deps,
-		null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' )
-	);
 	
 	// Register block editor script for backend.
 	wp_register_script(
 		'advanced-maps-block-block-js',
 		plugins_url( '/dist/blocks.build.js', dirname( __FILE__ ) ),
 		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ),
-		null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
+		'0.1.0',
 		true
 	);
 
@@ -65,7 +57,7 @@ function advanced_maps_block_block_assets() { // phpcs:ignore
 		'advanced-maps-block-block-editor-css',
 		plugins_url( 'dist/blocks.editor.build.css', dirname( __FILE__ ) ),
 		array( 'wp-edit-blocks' ),
-		null // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' )
+		'0.1.0'
 	);
 
 	if ( isset( $nonce ) && is_admin() ) {
@@ -87,7 +79,7 @@ function advanced_maps_block_block_assets() { // phpcs:ignore
 			'advanced-maps-block-frontend-js',
 			plugins_url( '/src/frontend.js', dirname( __FILE__ ) ),
 			array(),
-			null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
+			'0.1.0',
 			true
 		);
 
@@ -96,7 +88,7 @@ function advanced_maps_block_block_assets() { // phpcs:ignore
 			'google-maps',
 			'https://maps.googleapis.com/maps/api/js?key=' . $key . $google_maps_params,
 			array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor', 'advanced-maps-block-frontend-js' ),
-			null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ),
+			'0.1.0',
 			true
 		);
 	}
@@ -113,8 +105,6 @@ function advanced_maps_block_block_assets() { // phpcs:ignore
 	 */
 	register_block_type(
 		'amb/advanced-maps-block', array(
-			// Enqueue blocks.style.build.css on both frontend & backend.
-			'style'         => 'advanced-maps-block-style-css',
 			// Enqueue blocks.build.js in the editor only.
 			'editor_script' => 'advanced-maps-block-block-js',
 			// Enqueue blocks.editor.build.css in the editor only.

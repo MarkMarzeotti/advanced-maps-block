@@ -29,11 +29,6 @@ const ExtractTextPlugin = require( 'extract-text-webpack-plugin' );
 // Source maps are resource heavy and can cause out of memory issue for large source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP === 'true';
 
-// Extract style.css for both editor and frontend styles.
-const blocksCSSPlugin = new ExtractTextPlugin( {
-	filename: './dist/blocks.style.build.css',
-} );
-
 // Extract editor.css for editor styles.
 const editBlocksCSSPlugin = new ExtractTextPlugin( {
 	filename: './dist/blocks.editor.build.css',
@@ -103,11 +98,6 @@ module.exports = {
 				},
 			},
 			{
-				test: /style\.s?css$/,
-				exclude: /(node_modules|bower_components)/,
-				use: blocksCSSPlugin.extract( extractConfig ),
-			},
-			{
 				test: /editor\.s?css$/,
 				exclude: /(node_modules|bower_components)/,
 				use: editBlocksCSSPlugin.extract( extractConfig ),
@@ -116,7 +106,6 @@ module.exports = {
 	},
 	// Add plugins.
 	plugins: [
-		blocksCSSPlugin,
 		editBlocksCSSPlugin,
 		// Minify the code.
 		new webpack.optimize.UglifyJsPlugin( {

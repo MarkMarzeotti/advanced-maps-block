@@ -3,7 +3,6 @@
  */
 
 import './editor.scss';
-import './style.scss';
 
 import Geocode from 'react-geocode';
 import axios from 'axios';

@@ -39,7 +39,7 @@ function advanced_maps_block_block_assets() { // phpcs:ignore
 		$nonce              = wp_create_nonce( 'advanced_maps_block_api_key_nonce' );
 	} else {
 		$style_deps         = array();
-		$google_maps_params = '&callback=gutenGoogleMapInit';
+		$google_maps_params = '&callback=advancedMapsBlockInit';
 		$google_maps_deps   = array( 'advanced-maps-block-frontend-js' );
 	}
 

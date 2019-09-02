@@ -182,25 +182,34 @@ registerBlockType( 'amb/advanced-maps-block', {
 
 		handleUpdateMapCenter() {
 			let mapCenter = this.state.mapCenter;
-			Geocode.fromAddress( mapCenter.address ).then(
-				response => {
-					mapCenter = {
-						lat: response.results[ 0 ].geometry.location.lat,
-						lng: response.results[ 0 ].geometry.location.lng,
-						address: response.results[ 0 ].formatted_address,
-					};
+			if ( mapCenter.address ) {
+				Geocode.fromAddress( mapCenter.address ).then(
+					response => {
+						mapCenter = {
+							lat: response.results[ 0 ].geometry.location.lat,
+							lng: response.results[ 0 ].geometry.location.lng,
+							address: response.results[ 0 ].formatted_address,
+						};
 
-					this.props.setAttributes( { mapCenter: JSON.stringify( mapCenter ) } );
-					this.setState( {
-						mapCenter,
-						mapCenterUpdated: false,
-						mapShouldUpdate: true,
-					} );
-				},
-				error => {
-					console.error( error );
-				}
-			);
+						this.props.setAttributes( { mapCenter: JSON.stringify( mapCenter ) } );
+						this.setState( {
+							mapCenter,
+							mapCenterUpdated: false,
+							mapShouldUpdate: true,
+						} );
+					},
+					error => {
+						console.error( error );
+					}
+				);
+			} else {
+				this.props.setAttributes( { mapCenter: JSON.stringify( mapCenter ) } );
+				this.setState( {
+					mapCenter,
+					mapCenterUpdated: false,
+					mapShouldUpdate: true,
+				} );
+			}
 		}
 
 		handleCreateGoogleMap() {

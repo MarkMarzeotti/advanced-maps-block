@@ -1,4 +1,4 @@
-function gutenGoogleMapInit() {
+function advancedMapsBlockInit() {
 	var maps = document.getElementsByClassName( 'advanced-maps-block' );
 
 	Array.prototype.forEach.call( maps, function( mapItem ) {

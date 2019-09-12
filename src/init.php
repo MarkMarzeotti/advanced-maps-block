@@ -17,11 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Enqueue Gutenberg block assets for both frontend + backend.
  *
  * Assets enqueued:
- * 1. dist/blocks.style.build.css - Frontend + Backend.
- * 2. dist/blocks.build.js - Backend.
- * 3. dist/blocks.editor.build.css - Backend.
- * 4. src/frontend.js - Frontend.
- * 5. https://maps.googleapis.com/maps/api/js - Frontend.
+ * 1. dist/blocks.build.js - Backend.
+ * 2. dist/blocks.editor.build.css - Backend.
  *
  * @uses {wp-blocks} for block type registration & related functions.
  * @uses {wp-element} for WP Element abstraction — structure of blocks.
@@ -31,17 +28,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function advanced_maps_block_block_assets() { // phpcs:ignore
 	$key = get_option( 'advanced_maps_block_api_key' );
-
-	if ( is_admin() ) {
-		$style_deps         = array( 'wp-editor' );
-		$google_maps_params = null;
-		$google_maps_deps   = array();
-		$nonce              = wp_create_nonce( 'advanced_maps_block_api_key_nonce' );
-	} else {
-		$style_deps         = array();
-		$google_maps_params = '&callback=advancedMapsBlockInit';
-		$google_maps_deps   = array( 'advanced-maps-block-frontend-js' );
-	}
 	
 	// Register block editor script for backend.
 	wp_register_script(
@@ -60,7 +46,7 @@ function advanced_maps_block_block_assets() { // phpcs:ignore
 		'0.1.0'
 	);
 
-	if ( isset( $nonce ) && is_admin() ) {
+	if ( is_admin() ) {
 		// WP Localized globals.
 		wp_localize_script(
 			'advanced-maps-block-block-js',
@@ -68,28 +54,8 @@ function advanced_maps_block_block_assets() { // phpcs:ignore
 			[
 				'apiKey'  => get_option( 'advanced_maps_block_api_key', '' ),
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => $nonce
+				'nonce'   => wp_create_nonce( 'advanced_maps_block_api_key_nonce' ),
 			]
-		);
-	}
-
-	// Register script for frontend.
-	if ( ! is_admin() ) {
-		wp_register_script(
-			'advanced-maps-block-frontend-js',
-			plugins_url( '/src/frontend.js', dirname( __FILE__ ) ),
-			array(),
-			'0.1.0',
-			true
-		);
-
-		// Register Google Maps API for frontend and backend.
-		wp_register_script(
-			'google-maps',
-			'https://maps.googleapis.com/maps/api/js?key=' . $key . $google_maps_params,
-			array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor', 'advanced-maps-block-frontend-js' ),
-			'0.1.0',
-			true
 		);
 	}
 
@@ -109,14 +75,35 @@ function advanced_maps_block_block_assets() { // phpcs:ignore
 			'editor_script' => 'advanced-maps-block-block-js',
 			// Enqueue blocks.editor.build.css in the editor only.
 			'editor_style'  => 'advanced-maps-block-block-editor-css',
-			// Enqueue frontend.build.js on frontend.
-			'script'        => 'advanced-maps-block-frontend-js',
-			// Enqueue Google Maps API on frontend.
-			'script'        => 'google-maps',
 		)
 	);
 }
 add_action( 'init', 'advanced_maps_block_block_assets' );
+
+/**
+ * Enqueue map scripts on frontend.
+ */
+function advanced_maps_block_enqueue_map_scripts() {
+	$key = get_option( 'advanced_maps_block_api_key' );
+
+	wp_enqueue_script(
+		'advanced-maps-block-frontend-js',
+		plugins_url( '/src/frontend.js', dirname( __FILE__ ) ),
+		array(),
+		'0.1.0',
+		true
+	);
+
+	// Register Google Maps API for frontend and backend.
+	wp_enqueue_script(
+		'google-maps',
+		'https://maps.googleapis.com/maps/api/js?key=' . $key . '&callback=advancedMapsBlockInit',
+		array( 'advanced-maps-block-frontend-js' ),
+		'0.1.0',
+		true
+	);
+}
+add_action( 'wp_enqueue_scripts', 'advanced_maps_block_enqueue_map_scripts' );
 
 /**
  * AJAX script to update Google Maps API Key option.

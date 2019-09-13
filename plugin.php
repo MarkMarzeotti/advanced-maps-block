@@ -4,7 +4,7 @@
  * Description: Easy to use Google Maps block for the WordPress block editor featuring multiple map markers and unlimited style options. Use with a Google Maps JavaScript API key.
  * Author: Mark Marzeotti
  * Author URI: https://markmarzeotti.com/
- * Version: 0.1.0
+ * Version: 0.2.0
  * Tested up to: 5.2.2
  *
  * Advanced Maps Block is free software: you can redistribute it and/or
